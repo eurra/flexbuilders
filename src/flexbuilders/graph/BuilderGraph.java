@@ -24,7 +24,7 @@ public interface BuilderGraph
      * @param id The node id related to the id.
      * @return The node instance.
      */
-    <T> NestedBuilder<T> getNode(NodeId<T> id);
+    //<T> NestedBuilder<T> getNode(NodeId<T> id);
     
     <T> NestedBuilder<T[]> getAllFromNode(NodeId<T> id, Class<T> arrayType);
     
