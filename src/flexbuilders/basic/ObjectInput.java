@@ -1,8 +1,7 @@
 
 package flexbuilders.basic;
 
-import flexbuilders.core.BuildException;
-import flexbuilders.core.Buildable;
+import flexbuilders.core.NestedBuilder;
 import flexbuilders.core.Delegate;
 
 /**
@@ -11,5 +10,5 @@ import flexbuilders.core.Delegate;
  */
 public interface ObjectInput extends Delegate
 {
-    ObjectInput nextArgument(Buildable arg) throws BuildException;
+    ObjectInput nextArgument(NestedBuilder arg);
 }

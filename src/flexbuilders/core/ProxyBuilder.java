@@ -15,18 +15,19 @@ import java.util.Set;
 /**
  *
  * @author Enrique Urra C.
+ * @param <T>
  */
-public final class ProxyBuilder<T extends Builder> implements Buildable<T>
+public final class ProxyBuilder<T extends BuildHandler> extends AbstractBuilder<T>
 {
-    public static <T extends Builder> ProxyBuilder<T> createProxyFor(Class<T> mainBuildType) throws BuildException
+    public static <T extends BuildHandler> ProxyBuilder<T> createProxyFor(Class<T> mainBuildType)
     {
         return new ProxyBuilder<>(mainBuildType);
     }
     
     private static class AdapterBuilderHandler implements InvocationHandler
     {
-        private Class mainBuildType;
-        private Delegate[] delegates;
+        private final Class mainBuildType;
+        private final Delegate[] delegates;
 
         public AdapterBuilderHandler(Class mainBuildType, Delegate[] delegates)
         {
@@ -35,7 +36,7 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
         }
         
         @Override
-        public Object invoke(Object mainBuilder, Method method, Object[] args) throws BuildException
+        public Object invoke(Object mainBuilder, Method method, Object[] args)
         {
             String methodName = method.getName();
             Class[] methodArgsTypes = method.getParameterTypes();
@@ -69,12 +70,18 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
                 
                 result = proxyMethod.invoke(targetDelegate, args);
             }
-            catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException ex)
+            catch(IllegalAccessException | IllegalArgumentException ex)
             {
-                if(ex instanceof InvocationTargetException && ex.getCause() instanceof BuildException)
+                throw new BuildException("Cannot execute the delegate method '" + proxyMethod + "'", ex);
+            }
+            catch(InvocationTargetException ex)
+            {
+                Throwable cause = ex.getCause();
+                
+                if(cause instanceof BuildException)
                     throw (BuildException)ex.getCause();
                 
-                throw new BuildException("Cannot execute the delegate method '" + proxyMethod + "'", ex);
+                throw new BuildException("The execution of the delegate method '" + proxyMethod + "' has failed: " + cause.getLocalizedMessage(), cause);
             }
             
             if(method.getReturnType().equals(mainBuildType))
@@ -83,9 +90,8 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
                 return result;
         }
     }
-        
-    private T proxy;    
-    private Class mainBuildInterface;
+            
+    private final Class mainBuildInterface;
     private Set<Delegate> delegates;
     private Map<Class, Delegate> delegatesMap;
     private List<Class> orderedDelegateTypes;
@@ -93,10 +99,10 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
     private ProxyBuilder(Class mainBuildType)
     {
         if(mainBuildType == null)
-            throw new NullPointerException("Null main build type");
+            throw new BuilderInputException("Null main build type");
         
         if(!mainBuildType.isInterface())
-            throw new IllegalArgumentException("The main build type must be interface");
+            throw new BuilderInputException("The main build type must be interface");
                 
         this.mainBuildInterface = mainBuildType;
         this.delegates = new HashSet<>();
@@ -104,7 +110,7 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
         this.orderedDelegateTypes = new ArrayList<>();
     }
     
-    public ProxyBuilder<T> addDelegate(Delegate delegate) throws BuildException
+    public ProxyBuilder<T> addDelegate(Delegate delegate)
     {
         if(!delegates.contains(delegate))
             delegates.add(delegate);
@@ -112,38 +118,35 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
         return this;
     }
     
-    public <K extends Delegate> ProxyBuilder<T> addDelegate(K impl, Class<? super K>... types) throws BuildException
+    public <K extends Delegate> ProxyBuilder<T> addDelegate(K impl, Class<? super K>... types)
     {
         if(impl == null)
-            throw new BuildException("The delegate implementation cannot be null");
+            throw new BuilderInputException("The delegate implementation cannot be null");
         
         if(types == null || types.length == 0)
-            throw new BuildException("At least one valid delegate type must be provided");
+            throw new BuilderInputException("At least one valid delegate type must be provided");
         
-        for(int i = 0; i < types.length; i++)
+        for (Class<? super K> type : types)
         {
-            if(!types[i].isInterface())
-                throw new BuildException("The delegate type '" + types[i] + "' is invalid: it must be an interface");
+            if (!type.isInterface())
+                throw new BuilderInputException("The delegate type '" + type + "' is invalid: it must be an interface");
         }
         
-        for(int i = 0; i < types.length; i++)
+        for (Class<? super K> type : types)
         {
-            if(!delegatesMap.keySet().contains(types[i]))
-                orderedDelegateTypes.add(types[i]);
-
-            delegatesMap.put(types[i], impl);
+            if (!delegatesMap.keySet().contains(type))
+                orderedDelegateTypes.add(type);
+            
+            delegatesMap.put(type, impl);
         }
         
         addDelegate(impl);
         return this;
     }
-        
+
     @Override
-    public T build() throws BuildException
+    public void buildInstance(BuildSession session) throws BuildException
     {
-        if(proxy != null)
-            return proxy;
-        
         Class[] proxyTypes = new Class[1 + orderedDelegateTypes.size()];
         proxyTypes[0] = mainBuildInterface;
         int index = 1;
@@ -152,6 +155,7 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
             proxyTypes[index++] = delegateType;
         
         Delegate[] allDelegates = delegates.toArray(new Delegate[0]);
+        T proxy;
         
         try
         {
@@ -160,18 +164,24 @@ public final class ProxyBuilder<T extends Builder> implements Buildable<T>
                 proxyTypes,
                 new AdapterBuilderHandler(mainBuildInterface, allDelegates)
             );
+            
+            session.registerResult(this, proxy);
         }
         catch(IllegalArgumentException ex)
         {
             throw new BuildException("Cannot create the builder proxy based on the provided interfaces", ex);
         }
         
-        for(int i = 0; i < allDelegates.length; i++)
+        for (Delegate allDelegate : allDelegates)
         {
-            if(allDelegates[i] instanceof ProxyDelegate)
-                ((ProxyDelegate)allDelegates[i]).setProxy(proxy);
+            if (allDelegate instanceof ProxyDelegate)
+                ((ProxyDelegate)allDelegate).setProxy(proxy);
         }
-        
-        return proxy;
+    }
+
+    @Override
+    public BuildStateInfo getStateInfo()
+    {
+        return new DefaultStateInfo().setName("Proxy");
     }
 }

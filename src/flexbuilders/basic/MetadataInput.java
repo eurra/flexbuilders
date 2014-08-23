@@ -2,8 +2,8 @@
 package flexbuilders.basic;
 
 import optefx.util.metadata.Metadata;
-import flexbuilders.core.BuildException;
-import flexbuilders.core.Buildable;
+import flexbuilders.core.Builder;
+import flexbuilders.core.NestedBuilder;
 import flexbuilders.core.Delegate;
 
 /**
@@ -12,6 +12,6 @@ import flexbuilders.core.Delegate;
  */
 public interface MetadataInput<T> extends Delegate
 {
-    MetadataInput setTarget(Buildable<T> target) throws BuildException;
-    MetadataInput attachData(Buildable<? extends Metadata> data) throws BuildException;
+    MetadataInput setTarget(NestedBuilder<T> target);
+    MetadataInput attachData(Builder<? extends Metadata> data);
 }

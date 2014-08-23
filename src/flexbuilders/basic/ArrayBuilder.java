@@ -1,17 +1,15 @@
 
 package flexbuilders.basic;
 
-import flexbuilders.core.BuildException;
-import flexbuilders.core.Buildable;
-import flexbuilders.core.Builder;
+import flexbuilders.core.NestedBuilder;
 
 /**
  *
  * @author Enrique Urra C.
  */
-public interface ArrayBuilder<T> extends Builder, Buildable, ArrayInput<T>
+public interface ArrayBuilder<T> extends NestedBuilder, ArrayInput<T>
 {
-    @Override ArrayBuilder<T> setLength(int length) throws BuildException;
-    @Override ArrayBuilder<T> elem(Buildable<? extends T> elem) throws BuildException;
-    @Override ArrayBuilder<T> elem(int index, Buildable<? extends T> elem) throws BuildException;
+    @Override ArrayBuilder<T> setLength(int length);
+    @Override ArrayBuilder<T> elem(NestedBuilder<? extends T> elem);
+    @Override ArrayBuilder<T> elem(int index, NestedBuilder<? extends T> elem);
 }
