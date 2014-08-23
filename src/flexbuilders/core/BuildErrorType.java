@@ -21,7 +21,7 @@ public enum BuildErrorType
      */
     NONFATAL,
     /**
-     * Represent a fatal build error. This This type should be used when the 
+     * Represent a fatal build error. This type should be used when the 
      * build state is compromised and could present inconsistencies, therefore,
      * a restart or rollback should be performed.
      */

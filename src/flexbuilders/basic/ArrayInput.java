@@ -1,8 +1,7 @@
 
 package flexbuilders.basic;
 
-import flexbuilders.core.BuildException;
-import flexbuilders.core.Buildable;
+import flexbuilders.core.NestedBuilder;
 import flexbuilders.core.Delegate;
 
 /**
@@ -11,8 +10,8 @@ import flexbuilders.core.Delegate;
  */
 public interface ArrayInput<T> extends Delegate
 {
-    ArrayInput<T> setLength(int length) throws BuildException;
-    ArrayInput<T> elem(Buildable<? extends T> elem) throws BuildException;
-    ArrayInput<T> elem(int index, Buildable<? extends T> elem) throws BuildException;
-    Buildable<T[]> asArray();
+    ArrayInput<T> setLength(int length);
+    ArrayInput<T> elem(NestedBuilder<? extends T> elem);
+    ArrayInput<T> elem(int index, NestedBuilder<? extends T> elem);
+    NestedBuilder<T[]> asArray();
 }

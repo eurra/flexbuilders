@@ -1,15 +1,13 @@
 
 package flexbuilders.basic;
 
-import flexbuilders.core.BuildException;
-import flexbuilders.core.Buildable;
-import flexbuilders.core.Builder;
+import flexbuilders.core.NestedBuilder;
 
 /**
  *
  * @author Enrique Urra C.
  */
-public interface ObjectBuilder<T> extends Builder, Buildable<T>, ObjectInput
+public interface ObjectBuilder<T> extends NestedBuilder<T>, ObjectInput
 {
-    @Override ObjectBuilder<T> nextArgument(Buildable arg) throws BuildException;
+    @Override ObjectBuilder<T> nextArgument(NestedBuilder arg);
 }

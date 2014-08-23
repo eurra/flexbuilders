@@ -11,7 +11,7 @@ import java.util.Map;
 public class DefaultStateInfo implements BuildStateInfo
 {
     private String name;
-    private Map<String, Object> stateMap;
+    private final Map<String, Object> stateMap;
 
     public DefaultStateInfo()
     {
