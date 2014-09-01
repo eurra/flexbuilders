@@ -1,2 +1,6 @@
 /dist/
 /build/
+/nbproject/
+/lib/
+/test/
+build.xml
