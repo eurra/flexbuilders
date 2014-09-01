@@ -1,7 +1,8 @@
 
 package flexbuilders.graph;
 
-import flexbuilders.core.NestedBuilder;
+import optefx.util.metadata.MetadataManager;
+import optefx.util.metadata.MetadataProxy;
 
 /**
  *
@@ -9,52 +10,58 @@ import flexbuilders.core.NestedBuilder;
  */
 public final class GraphFactory
 {
-    public static NestableGraph graph(NestableGraph... dependencies)
+    public static ExtensibleGraph graph()
     {
-        return new DefaultNestableGraph(dependencies);
+        return new DefaultExtensibleGraph();
     }
     
-    public static ScannableGraph scannerGraph(NestableGraph... dependencies)
-    {
-        return new DefaultScannableGraph(dependencies);
+    public static <T> NodeId<T> nodeId(NodeData<? extends T>... metaData)
+    { 
+        return nodeId(null, metaData);
     }
     
-    public static <T> NodeId<T> nodeId()
+    public static <T> NodeId<T> nodeId(String nodeName, NodeData<? extends T>... metaData)
     {
-        return new NodeId<T>() {};
-    }
-    
-    public static <T> NodeLoader<T> customLoader(NodeLoader<T> loader, NodeProcessor<T>... triggers)
-    {
-        if(loader == null)
-            throw new NullPointerException("Null loader");
-        
-        NodeProcessor[] newTriggers = new NodeProcessor[triggers.length];
-        
-        for(int i = 0; i < triggers.length; i++)
+        NodeId<T> node = new NodeId<T>()
         {
-            if(triggers[i] == null)
-                throw new NullPointerException("Null trigger at position " + i);
-            
-            newTriggers[i] = triggers[i];
-        }
-        
-        return (BuilderGraph gh) ->
-        {
-            NestedBuilder<T> value = loader.load(gh);
-            
-            for(int i = 0; i < newTriggers.length; i++)
+            private final MetadataProxy<NodeData> innerProxy = new MetadataProxy(this);
+
+            @Override
+            public <T extends NodeData> T getData(Class<T> dataType)
             {
-                if(newTriggers[i] == null)
-                    throw new NullPointerException("Null trigger at position " + i);
-                
-                newTriggers[i].process(value, gh);
+                return innerProxy.getData(dataType);
+            }
+
+            @Override
+            public <T extends NodeData> T[] getAllData(Class<T> dataType)
+            {
+                return innerProxy.getAllData(dataType);
+            }
+
+            @Override
+            public boolean hasData(Class<? extends NodeData> dataType)
+            {
+                return innerProxy.hasData(dataType);
             }
             
-            return value;
+            @Override
+            public String toString()
+            {
+                if(nodeName == null || nodeName.isEmpty())
+                    return "(no-name)";
+                
+                return nodeName;
+            }
         };
+        
+        MetadataManager dataManager = MetadataManager.getInstance();
+        
+        for(int i = 0; i < metaData.length; i++)
+            dataManager.attachData(node, metaData[i]);
+        
+        return node;
     }
-    
+
     private GraphFactory()
     {
     }

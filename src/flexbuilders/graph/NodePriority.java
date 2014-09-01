@@ -7,7 +7,8 @@ package flexbuilders.graph;
  */
 public enum NodePriority
 {
-    MANUALLY_SET(-1),
+    MANUALLY_SET(-2),
+    AUTOLOADED(-1),
     HIGH(0),
     NORMAL(1),
     LOW(2),

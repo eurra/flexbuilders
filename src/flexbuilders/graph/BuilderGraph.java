@@ -1,19 +1,16 @@
 
 package flexbuilders.graph;
 
-import flexbuilders.core.BuildException;
 import flexbuilders.core.NestedBuilder;
+import optefx.util.metadata.Metadata;
+import optefx.util.metadata.MetadataProvider;
 
 /**
  *
  * @author Enrique Urra C.
  */
-public interface BuilderGraph
+public interface BuilderGraph extends MetadataProvider<Metadata>
 {
-    <T> NestedBuilder<T> loadNode(NodeLoader<T> id);
-    
-    void loadSubGraph(SubGraphLoader loader) throws BuildException;
-    
     /**
      * Gets the node (in builder form) related with the specified id. A node always
      * exists even if no value has been added with the id, therefore, this is a
@@ -24,21 +21,9 @@ public interface BuilderGraph
      * @param id The node id related to the id.
      * @return The node instance.
      */
-    <T> NestedBuilder<T> getNode(NodeId<T> id);
+    <T> NestedBuilder<T> node(NodeId<T> id);
     
-    <T> NestedBuilder<T[]> getAllFromNode(NodeId<T> id, Class<T> arrayType);
+    <T> NestedBuilder<T> node(NodeId<T> id, NestedBuilder<T> defaultValue);
     
-    /**
-     * Sets a value related to the specified id in the graph, returning a value
-     * builder with the id.
-     * @param <T> The type of the buildable entity.
-     * @param id The node id.
-     * @param value The value to set.
-     * @return The value builder instance related to the added value.
-     */
-    <T> NestedBuilder<T> setValue(NodeId<T> id, NestedBuilder<T> value);
-    
-    <T> NestedBuilder<T> setValue(NodeId<T> id, NestedBuilder<T> value, NodePriority priority);
-    
-    <T> NodeBuilder<T> forNode(NodeId<T> id);
+    <T> NestedBuilder<T[]> multiNode(NodeId<T> id, Class<T> type);
 }

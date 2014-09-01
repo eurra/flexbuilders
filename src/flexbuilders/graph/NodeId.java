@@ -1,7 +1,9 @@
 
 package flexbuilders.graph;
 
-public interface NodeId<T>
+import optefx.util.metadata.MetadataProvider;
+
+public interface NodeId<T> extends MetadataProvider<NodeData>
 { 
     /**
      * Parses an input string and returns its equivalent node object instance.

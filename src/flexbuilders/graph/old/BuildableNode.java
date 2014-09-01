@@ -1,6 +1,7 @@
 
-package flexbuilders.graph;
+package flexbuilders.graph.old;
 
+import flexbuilders.core.NestedBuilder;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -11,6 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Documented
-public @interface OpenNode
+public @interface BuildableNode
 {
+    Class<? extends NestedBuilder> value();
 }

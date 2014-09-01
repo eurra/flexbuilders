@@ -9,5 +9,5 @@ import flexbuilders.core.BuildException;
  */
 public interface SubGraphLoader
 {
-    void loadSubGraph(BuilderGraph graph) throws BuildException;
+    void loadSubGraph(MutableGraph graph) throws BuildException;
 }
